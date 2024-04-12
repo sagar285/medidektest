@@ -50,11 +50,8 @@ const getRecordforPatient = async (req, res) => {
 const deleterecord =async(req,res)=>{
   try {
   const id =req.params.id;
-  const uniquedata = await MedicalHistory.findById({_id:id});
-  console.log(uniquedata.img)
-  await deleteFile(uniquedata.img);
-  await MedicalHistory.findByIdAndDelete({_id:uniquedata._id});
-  res.send(uniquedata);
+  const uniquedata = await MedicalHistory.findByIdAndDelete({_id:id});
+  res.send("data deelted succefully");
 } catch (error) {
    console.log(error)
    res.status(500).send(error) 
