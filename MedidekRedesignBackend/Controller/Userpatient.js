@@ -30,9 +30,9 @@ const otpVerificationForMobileApp =async(req,res)=>{
     const {email} =req.body;
     const OTP =Math.floor(Math.random()*9000)
     const ispatient = await userpatient.findOne({ email });
-    const isdoctor = await Doctor.findOne({ email });
-    const ishospital = await Master.findOne({ email });
-    if(ispatient || isdoctor || ishospital){
+    // const isdoctor = await Doctor.findOne({ email });
+    // const ishospital = await Master.findOne({ email });
+    if(ispatient){
         return res.send(error(403,`User already Exist`))
     }
     else{
