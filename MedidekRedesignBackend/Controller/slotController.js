@@ -129,7 +129,7 @@ const userslot = async (req, res) => {
 
          const appointmentTimes = extractAppointmentTimes(alreadyslotsbooked);
          console.log("appointmentTimes",appointmentTimes)
-          availableSlots = slots1.map(slot => { return { slot: slot, isbooked: appointmentTimes.includes(slot) }; })
+          availableSlots = slots1.map(slot => { return { slot: slot, isbooked: appointmentTimes.includes(`${slot.startTime}-${slot.endTime}`) }; })
               console.log(availableSlots)
             }
              
@@ -152,7 +152,7 @@ const userslot = async (req, res) => {
                 slots2 = genrateSlots(starthour1, endhour1, slotDuration)
                 const alreadyslotsbooked = await AppointmentModel.find({ $and: [{ doctorid: doctorid }, { appointmentDate: newdate },{status:"pending"}] })
                 const appointmentTimes = extractAppointmentTimes(alreadyslotsbooked);
-                 availableSlots2 = slots2.map(slot => { return { slot: slot, isbooked: appointmentTimes.includes(slot) }; })
+                 availableSlots2 = slots2.map(slot => { return { slot: slot, isbooked: appointmentTimes.includes(`${slot.startTime}-${slot.endTime}`) }; })
                
             }
 
@@ -174,7 +174,7 @@ const userslot = async (req, res) => {
                 slots3 = genrateSlots(starthour2, endhour2, slotDuration)
                 const alreadyslotsbooked = await AppointmentModel.find({ $and: [{ doctorid: doctorid }, { appointmentDate: newdate },{status:"pending"}] })
                 const appointmentTimes = extractAppointmentTimes(alreadyslotsbooked);
-                 availableSlots3 = slots3.map(slot => { return { slot: slot, isbooked: appointmentTimes.includes(slot) }; })
+                 availableSlots3 = slots3.map(slot => { return { slot: slot, isbooked: appointmentTimes.includes(`${slot.startTime}-${slot.endTime}`) }; })
             }
 
             // const comparray = [...slots1, ...slots2, ...slots3];
