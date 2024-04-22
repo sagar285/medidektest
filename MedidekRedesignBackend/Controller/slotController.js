@@ -124,7 +124,7 @@ const userslot = async (req, res) => {
                 const endhour = newbb[0];
                 const endformat = cbb && cbb[1];
                 // Define the starttimes and endtimes
-                slots1 = genrateSlots(starthour, endhour, slotDuration)
+                slots1 = generateSlots(starthour, endhour, slotDuration)
                 const alreadyslotsbooked = await AppointmentModel.find({ $and: [{ doctorid: doctorid }, { appointmentDate: newdate },{status:"pending"}] })
 
          const appointmentTimes = extractAppointmentTimes(alreadyslotsbooked);
@@ -149,7 +149,7 @@ const userslot = async (req, res) => {
                 const endhour1 = newbb1 && newbb1[0];
                 const endformat1 = cbb1[1];
                 // Define the starttimes and endtimes
-                slots2 = genrateSlots(starthour1, endhour1, slotDuration)
+                slots2 = generateSlots(starthour1, endhour1, slotDuration)
                 const alreadyslotsbooked = await AppointmentModel.find({ $and: [{ doctorid: doctorid }, { appointmentDate: newdate },{status:"pending"}] })
                 const appointmentTimes = extractAppointmentTimes(alreadyslotsbooked);
                  availableSlots2 = slots2.map(slot => { return { slot: slot, isbooked: appointmentTimes.includes(`${slot.startTime}-${slot.endTime}`) }; })
@@ -171,7 +171,7 @@ const userslot = async (req, res) => {
                 const newbb2 = cbb2[0]?.split(":");
                 const endhour2 = newbb2 && newbb2[0];
                 const endformat2 = cbb2 && cbb2[1];
-                slots3 = genrateSlots(starthour2, endhour2, slotDuration)
+                slots3 = generateSlots(starthour2, endhour2, slotDuration)
                 const alreadyslotsbooked = await AppointmentModel.find({ $and: [{ doctorid: doctorid }, { appointmentDate: newdate },{status:"pending"}] })
                 const appointmentTimes = extractAppointmentTimes(alreadyslotsbooked);
                  availableSlots3 = slots3.map(slot => { return { slot: slot, isbooked: appointmentTimes.includes(`${slot.startTime}-${slot.endTime}`) }; })
@@ -193,64 +193,46 @@ const userslot = async (req, res) => {
 };
 
 
-const genrateSlots = (startTime, endTime, slotDuration) => {
-    // Initialize the slots array
-    const start = moment().hour(parseInt(endTime))
-    const originalDate = moment(start);
-    const endlastDate = originalDate.set({ hour: parseInt(endTime), minute: slotDuration, second: 0 });
+const generateSlots = (startTime, endTime, slotDuration) => {
     const slots = [];
-    var numberOfSlots = Math.floor(((endTime - startTime) * 60) / slotDuration);
-
-    let c = 12;
-    let d = 12;
-
-    // Calculate the number of slots
-    // if (startTime < 12 && endTime < 12 && format === "AM" && endformat === "AM") {
-    //     var numberOfSlots = Math.floor(((endTime - startTime) * 60) / slotDuration);
-
-    // }
-    // else if (startTime <= 12 && endTime >= 1 && format === "AM" && endformat === "PM") {
-    //     if (parseInt(endTime) !== 12) {
-    //         c = c + parseInt(endTime);
-    //     }
-
-    //     var numberOfSlots = Math.floor(((c - startTime) * 60) / slotDuration);
-
-    // }
-    // else if (startTime <= 12 && endTime < 12 && format === "PM" && endformat === "PM") {
-    //     d = d + startTime;
-    //     c = c + endTime;
-    //     var numberOfSlots = Math.floor(((c - d) * 60) / slotDuration);
-    //     // numberOfSlots)
-    // }
-    // else if (startTime < 12 && endTime >= 1 && format === "PM" && endformat === "AM") {
-    //     c = c + endTime;
-    //     var numberOfSlots = Math.floor(((c - startTime) * 60) / slotDuration);
-    //     // numberOfSlots)
-    // }
-    // else {
-    //     return null;
-    // }
-
-    //   Iterate over the slots
-    for (let i = 0; i <= numberOfSlots + 1; i++) {
-        // Calculate the start and end times for each slot
-        // const start = moment().add(startTime,'hour').set('hour');
-        const start = moment().hour(parseInt(startTime))
-        const originalDate = moment(start);
-        const modifiedDate = originalDate.set({ hour: parseInt(startTime), minute: 0, second: 0 });
-        const a = modifiedDate.format()
-
-        const startTimeOfSlot = moment(a).add(i * slotDuration, 'minutes');
-        const endTimeOfSlot = moment(startTimeOfSlot).add(slotDuration, 'minutes');
-        slots.push({
-            startTime: startTimeOfSlot.format("HH:mm"),
-            endTime: endTimeOfSlot.format("HH:mm")
-        });
+    const currentTime = moment();
+    const currentHour = parseInt(currentTime.format("HH"));
+    const currentMinute = parseInt(currentTime.format("mm"));
+  
+    // Check if endTime is less than or equal to currentHour
+    if (endTime <= currentHour) {
+      return slots; // Return an empty array if endTime is invalid
     }
-
-    // Return the slots array
+  
+    // Check if startTime is less than the current time
+    if (startTime < currentHour || (startTime === currentHour && 0 < currentMinute)) {
+      // Adjust startTime to the current time
+      startTime = currentHour;
+      const remainingMinutes = slotDuration - (currentMinute % slotDuration);
+      const startMinute = currentMinute + remainingMinutes;
+      if (startMinute >= 60) {
+        startTime += 1;
+      }
+    }
+  
+    let slotStartTime = moment().hour(startTime).minute(0).second(0);
+    const slotEndTime = moment().hour(endTime).minute(0).second(0);
+  
+    while (slotStartTime.isBefore(slotEndTime)) {
+      const endTimeOfSlot = moment(slotStartTime).add(slotDuration, 'minutes');
+  
+      // Check if the slot's startTime is greater than or equal to the current time
+      if (slotStartTime.isSameOrAfter(currentTime)) {
+        slots.push({
+          startTime: slotStartTime.format("HH:mm"),
+          endTime: endTimeOfSlot.format("HH:mm")
+        });
+      }
+  
+      slotStartTime = endTimeOfSlot;
+    }
+  
     return slots;
-};
+  };
 
 export { createslot, getslot, userslot };
