@@ -18,7 +18,7 @@ const RecordCreation = async (req, res) => {
     if (fileBuffer) {
       await uploadFile(fileBuffer, imageName, file.mimetype)
     }
-    let data = await MedicalHistory.create({ userid: id, img: imageName })
+    let data = await MedicalHistory.create({ userid: id, img: imageName,imgtype:file.mimetype,imgsize:file.size })
     if (data.img) {
       // data.imgurl = "https://d26dtlo3dcke63.cloudfront.net/" + data.img
       data.imgurl = "https://d2m9x1v3tvj3q8.cloudfront.net/" + data.img
